@@ -1073,104 +1073,28 @@ openfl_display_Sprite.prototype = $extend(openfl_display_DisplayObjectContainer.
 });
 var Main = function() {
 	openfl_display_Sprite.call(this);
-	var map = new voronoimap_Map({ width : 640, height : 480});
-	map.go0PlacePoints(42);
-	map.go1ImprovePoints(1);
-	var _g1 = 0;
-	var _g = map.points.length;
-	while(_g1 < _g) {
-		var i = _g1++;
+	var logicalMap = new LogicalMap(42,{ width : 640, height : 480});
+	logicalMap.improveRandomPoints(1);
+	var _g = 0;
+	var _g1 = logicalMap.points;
+	while(_g < _g1.length) {
+		var p = _g1[_g];
+		++_g;
 		var dot = new hxlpers_shapes_RectShape(1,1,16776960,0,0,true);
-		dot.set_x(map.points[i].x);
-		dot.set_y(map.points[i].y);
+		dot.set_x(p.x);
+		dot.set_y(p.y);
+		this.addChild(dot);
 	}
-	map.go2BuildGraph();
-	var centers = map.centers;
-	var _g11 = 0;
-	var _g2 = centers.length;
-	while(_g11 < _g2) {
-		var i1 = _g11++;
-		var center = centers[i1];
-		var corners = [];
-		var color = hxlpers_Rnd["int"](0,16777215);
-		var _g3 = 0;
-		var _g21 = center.corners.length;
-		while(_g3 < _g21) {
-			var j = _g3++;
-			var corner = center.corners[j];
-			corners.push(new openfl_geom_Point(corner.point.x,corner.point.y));
-		}
-		var polygonShape = new hxlpers_shapes_PolygonShape(corners);
-		polygonShape.get_graphics().beginFill(color);
-		polygonShape.draw();
-		polygonShape.get_graphics().endFill();
-		this.addChild(polygonShape);
-		var _g31 = 0;
-		var _g22 = center.borders.length;
-		while(_g31 < _g22) {
-			var k = _g31++;
-			var border = center.borders[k];
-		}
-	}
-	this.addChild(this.createVoronoi(map));
+	logicalMap.buildGraph();
+	var graphicMap = new GraphicMap(logicalMap);
+	graphicMap.drawEdges();
+	this.addChild(graphicMap);
 };
 $hxClasses["Main"] = Main;
 Main.__name__ = ["Main"];
 Main.__super__ = openfl_display_Sprite;
 Main.prototype = $extend(openfl_display_Sprite.prototype,{
-	createDelaunay: function(map) {
-		var delaunay = new openfl_display_Sprite();
-		var _g = 0;
-		var _g1 = map.centers;
-		while(_g < _g1.length) {
-			var center = _g1[_g];
-			++_g;
-			var _g2 = 0;
-			var _g3 = center.borders;
-			while(_g2 < _g3.length) {
-				var border = _g3[_g2];
-				++_g2;
-				var d0 = border.d0;
-				var d1 = border.d1;
-				if(d0 != null && d1 != null) {
-					var d0p = new openfl_geom_Point(d0.point.x,d0.point.y);
-					var d1p = new openfl_geom_Point(d1.point.x,d1.point.y);
-					var dSegmentShape = new hxlpers_shapes_SegmentShape(d0p,d1p);
-					dSegmentShape.get_graphics().lineStyle(1,16711680,0.25);
-					dSegmentShape.draw();
-					delaunay.addChild(dSegmentShape);
-				}
-			}
-		}
-		return delaunay;
-	}
-	,createVoronoi: function(map) {
-		var voronoi = new openfl_display_Sprite();
-		var _g = 0;
-		var _g1 = map.centers;
-		while(_g < _g1.length) {
-			var center = _g1[_g];
-			++_g;
-			var _g2 = 0;
-			var _g3 = center.borders;
-			while(_g2 < _g3.length) {
-				var border = _g3[_g2];
-				++_g2;
-				var v0 = border.v0;
-				var v1 = border.v1;
-				if(v0 != null && v1 != null) {
-					var v0p = new openfl_geom_Point(v0.point.x,v0.point.y);
-					var v1p = new openfl_geom_Point(v1.point.x,v1.point.y);
-					var vSegmentShape = new hxlpers_shapes_SegmentShape(v0p,v1p);
-					vSegmentShape.get_graphics().lineStyle(1,16711680,0.25);
-					vSegmentShape.draw();
-					voronoi.addChild(vSegmentShape);
-				}
-			}
-		}
-		return voronoi;
-	}
-	,__class__: Main
+	__class__: Main
 });
 var DocumentClass = function() {
 	openfl_Lib.current.addChild(this);
@@ -1401,6 +1325,34 @@ EReg.prototype = {
 	}
 	,__class__: EReg
 };
+var GraphicMap = function(logicalMap) {
+	openfl_display_Sprite.call(this);
+	this.logicalMap = logicalMap;
+};
+$hxClasses["GraphicMap"] = GraphicMap;
+GraphicMap.__name__ = ["GraphicMap"];
+GraphicMap.__super__ = openfl_display_Sprite;
+GraphicMap.prototype = $extend(openfl_display_Sprite.prototype,{
+	drawEdges: function() {
+		var edge;
+		var _g = 0;
+		var _g1 = this.logicalMap.voronoi.edges();
+		while(_g < _g1.length) {
+			var edge1 = _g1[_g];
+			++_g;
+			haxe_Log.trace("edge=" + Std.string(edge1),{ fileName : "GraphicMap.hx", lineNumber : 25, className : "GraphicMap", methodName : "drawEdges"});
+			haxe_Log.trace("leftVertex=" + Std.string(edge1.leftVertex),{ fileName : "GraphicMap.hx", lineNumber : 26, className : "GraphicMap", methodName : "drawEdges"});
+			haxe_Log.trace("coord=" + Std.string(edge1.leftVertex._coord),{ fileName : "GraphicMap.hx", lineNumber : 27, className : "GraphicMap", methodName : "drawEdges"});
+			if(edge1.leftVertex != null && edge1.rightVertex != null) {
+				var line = new hxlpers_shapes_SegmentShape(edge1.leftVertex._coord,edge1.rightVertex._coord);
+				line.get_graphics().lineStyle(1,16711680);
+				line.draw();
+				this.addChild(line);
+			}
+		}
+	}
+	,__class__: GraphicMap
+});
 var HxOverrides = function() { };
 $hxClasses["HxOverrides"] = HxOverrides;
 HxOverrides.__name__ = ["HxOverrides"];
@@ -1471,6 +1423,64 @@ Lambda.count = function(it,pred) {
 		}
 	}
 	return n;
+};
+var LogicalMap = function(nbPoints,size) {
+	this._size = size;
+	this.mapRandom = new de_polygonal_math_PM_$PRNG();
+	this.points = this.generateRandomPoints(nbPoints);
+};
+$hxClasses["LogicalMap"] = LogicalMap;
+LogicalMap.__name__ = ["LogicalMap"];
+LogicalMap.prototype = {
+	generateRandomPoints: function(NUM_POINTS) {
+		var p;
+		var i;
+		var points = [];
+		var _g = 0;
+		while(_g < NUM_POINTS) {
+			var i1 = _g++;
+			p = { x : this.mapRandom.nextDoubleRange(10,this._size.width - 10), y : this.mapRandom.nextDoubleRange(10,this._size.height - 10)};
+			points.push(p);
+		}
+		return points;
+	}
+	,improveRandomPoints: function(numLloydIterations) {
+		var i;
+		var p;
+		var q;
+		var voronoi;
+		var region;
+		var _g = 0;
+		while(_g < numLloydIterations) {
+			var i1 = _g++;
+			voronoi = new com_nodename_delaunay_Voronoi(this.points,null,new as3_Rectangle(0,0,this._size.width,this._size.height));
+			var _g1 = 0;
+			var _g2 = this.points;
+			while(_g1 < _g2.length) {
+				var p1 = _g2[_g1];
+				++_g1;
+				region = voronoi.region(p1);
+				p1.x = 0.0;
+				p1.y = 0.0;
+				var _g3 = 0;
+				while(_g3 < region.length) {
+					var q1 = region[_g3];
+					++_g3;
+					p1.x += q1.x;
+					p1.y += q1.y;
+				}
+				p1.x /= region.length;
+				p1.y /= region.length;
+				region.splice(0,region.length);
+			}
+			voronoi.dispose();
+		}
+	}
+	,buildGraph: function() {
+		this.voronoi = new com_nodename_delaunay_Voronoi(this.points,null,new as3_Rectangle(0,0,this._size.width,this._size.height));
+		haxe_Log.trace(this.voronoi.edges(),{ fileName : "LogicalMap.hx", lineNumber : 89, className : "LogicalMap", methodName : "buildGraph"});
+	}
+	,__class__: LogicalMap
 };
 Math.__name__ = ["Math"];
 var NMEPreloader = function() {
@@ -1598,9 +1608,6 @@ Std.parseInt = function(x) {
 	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) v = parseInt(x);
 	if(isNaN(v)) return null;
 	return v;
-};
-Std.random = function(x) {
-	if(x <= 0) return 0; else return Math.floor(Math.random() * x);
 };
 var StringBuf = function() {
 	this.b = "";
@@ -1764,15 +1771,6 @@ as3_BitmapDataCore.perlinNoise = function(bd,baseX,baseY,numOctaves,randomSeed,s
 	throw new js__$Boot_HaxeError("not implemented");
 	return null;
 };
-var as3_ConversionCore = function() { };
-$hxClasses["as3.ConversionCore"] = as3_ConversionCore;
-as3_ConversionCore.__name__ = ["as3","ConversionCore"];
-as3_ConversionCore.intFromBoolean = function(b) {
-	if(b) return 1; else return 0;
-};
-as3_ConversionCore.booleanFromInt = function(i) {
-	if(i == null) return false; else return i > 0;
-};
 var as3_NumberCore = function() { };
 $hxClasses["as3.NumberCore"] = as3_NumberCore;
 as3_NumberCore.__name__ = ["as3","NumberCore"];
@@ -1833,34 +1831,6 @@ as3_RectangleCore.top = function(r) {
 };
 as3_RectangleCore.bottom = function(r) {
 	return r.y + r.height;
-};
-var co_janicek_core_LambdaCore = function() { };
-$hxClasses["co.janicek.core.LambdaCore"] = co_janicek_core_LambdaCore;
-co_janicek_core_LambdaCore.__name__ = ["co","janicek","core","LambdaCore"];
-co_janicek_core_LambdaCore.first = function(it,f) {
-	var $it0 = $iterator(it)();
-	while( $it0.hasNext() ) {
-		var x = $it0.next();
-		if(f(x)) return x;
-	}
-	return null;
-};
-var co_janicek_core_NullCore = function() { };
-$hxClasses["co.janicek.core.NullCore"] = co_janicek_core_NullCore;
-co_janicek_core_NullCore.__name__ = ["co","janicek","core","NullCore"];
-co_janicek_core_NullCore.isNull = function(nullable) {
-	return nullable == null;
-};
-co_janicek_core_NullCore.isNotNull = function(nullable) {
-	return nullable != null;
-};
-co_janicek_core_NullCore.coalesce = function(nullable,defaultValue) {
-	if(nullable == null) return defaultValue; else return nullable;
-};
-co_janicek_core_NullCore.coalesceIter = function(nullables) {
-	return co_janicek_core_LambdaCore.first(nullables,function(n) {
-		return n != null;
-	});
 };
 var com_nodename_delaunay_BoundsCheck = function() { };
 $hxClasses["com.nodename.delaunay.BoundsCheck"] = com_nodename_delaunay_BoundsCheck;
@@ -4081,125 +4051,6 @@ haxe_io_Path.prototype = {
 	}
 	,__class__: haxe_io_Path
 };
-var hxlpers_Rnd = function() { };
-$hxClasses["hxlpers.Rnd"] = hxlpers_Rnd;
-hxlpers_Rnd.__name__ = ["hxlpers","Rnd"];
-hxlpers_Rnd["int"] = function(min,max) {
-	if(min == max) return min;
-	if(min > max) {
-		var temp = min;
-		min = max;
-		max = temp;
-	}
-	return min + Std.random(max);
-};
-hxlpers_Rnd["float"] = function(min,max) {
-	if(min == max) return min;
-	if(min > max) {
-		var temp = min;
-		min = max;
-		max = temp;
-	}
-	return min + Math.random() * (max - min);
-};
-hxlpers_Rnd.chance = function(prob) {
-	if(prob == null) prob = 0.5;
-	return Std.random(100) < prob * 100;
-};
-var hxlpers_geom_Pt = function() { };
-$hxClasses["hxlpers.geom.Pt"] = hxlpers_geom_Pt;
-hxlpers_geom_Pt.__name__ = ["hxlpers","geom","Pt"];
-hxlpers_geom_Pt.centroid = function(points) {
-	var c = new openfl_geom_Point();
-	var _g = 0;
-	while(_g < points.length) {
-		var p = points[_g];
-		++_g;
-		c = c.add(p);
-	}
-	c.normalize(c.get_length() / points.length);
-	return c;
-};
-var openfl_geom_Point = function(x,y) {
-	if(y == null) y = 0;
-	if(x == null) x = 0;
-	this.x = x;
-	this.y = y;
-};
-$hxClasses["openfl.geom.Point"] = openfl_geom_Point;
-openfl_geom_Point.__name__ = ["openfl","geom","Point"];
-openfl_geom_Point.distance = function(pt1,pt2) {
-	var dx = pt1.x - pt2.x;
-	var dy = pt1.y - pt2.y;
-	return Math.sqrt(dx * dx + dy * dy);
-};
-openfl_geom_Point.interpolate = function(pt1,pt2,f) {
-	return new openfl_geom_Point(pt2.x + f * (pt1.x - pt2.x),pt2.y + f * (pt1.y - pt2.y));
-};
-openfl_geom_Point.polar = function(len,angle) {
-	return new openfl_geom_Point(len * Math.cos(angle),len * Math.sin(angle));
-};
-openfl_geom_Point.prototype = {
-	add: function(v) {
-		return new openfl_geom_Point(v.x + this.x,v.y + this.y);
-	}
-	,clone: function() {
-		return new openfl_geom_Point(this.x,this.y);
-	}
-	,copyFrom: function(sourcePoint) {
-		this.x = sourcePoint.x;
-		this.y = sourcePoint.y;
-	}
-	,equals: function(toCompare) {
-		return toCompare != null && toCompare.x == this.x && toCompare.y == this.y;
-	}
-	,normalize: function(thickness) {
-		if(this.x == 0 && this.y == 0) return; else {
-			var norm = thickness / Math.sqrt(this.x * this.x + this.y * this.y);
-			this.x *= norm;
-			this.y *= norm;
-		}
-	}
-	,offset: function(dx,dy) {
-		this.x += dx;
-		this.y += dy;
-	}
-	,setTo: function(xa,ya) {
-		this.x = xa;
-		this.y = ya;
-	}
-	,subtract: function(v) {
-		return new openfl_geom_Point(this.x - v.x,this.y - v.y);
-	}
-	,toString: function() {
-		return "(x=" + this.x + ", y=" + this.y + ")";
-	}
-	,__toLimeVector2: function() {
-		return new lime_math_Vector2(this.x,this.y);
-	}
-	,get_length: function() {
-		return Math.sqrt(this.x * this.x + this.y * this.y);
-	}
-	,__class__: openfl_geom_Point
-};
-var hxlpers_geom_V2d = function(X,Y) {
-	openfl_geom_Point.call(this,X,Y);
-};
-$hxClasses["hxlpers.geom.V2d"] = hxlpers_geom_V2d;
-hxlpers_geom_V2d.__name__ = ["hxlpers","geom","V2d"];
-hxlpers_geom_V2d.fromPoint = function(p) {
-	return new hxlpers_geom_V2d(p.x,p.y);
-};
-hxlpers_geom_V2d.fromPoints = function(p0,p1) {
-	return new hxlpers_geom_V2d(p1.x - p0.x,p1.y - p0.y);
-};
-hxlpers_geom_V2d.__super__ = openfl_geom_Point;
-hxlpers_geom_V2d.prototype = $extend(openfl_geom_Point.prototype,{
-	getAngle: function() {
-		return Math.atan2(this.y,this.x);
-	}
-	,__class__: hxlpers_geom_V2d
-});
 var openfl_display_Shape = function() {
 	openfl_display_DisplayObject.call(this);
 };
@@ -4215,55 +4066,6 @@ openfl_display_Shape.prototype = $extend(openfl_display_DisplayObject.prototype,
 		return this.__graphics;
 	}
 	,__class__: openfl_display_Shape
-});
-var hxlpers_shapes_PolygonShape = function(vertices,center) {
-	openfl_display_Shape.call(this);
-	haxe_Log.trace(vertices,{ fileName : "PolygonShape.hx", lineNumber : 18, className : "hxlpers.shapes.PolygonShape", methodName : "new"});
-	this._vertices = vertices;
-	if(center == null) center = hxlpers_geom_Pt.centroid(this._vertices);
-	haxe_Log.trace("before " + Std.string(this._vertices),{ fileName : "PolygonShape.hx", lineNumber : 26, className : "hxlpers.shapes.PolygonShape", methodName : "new"});
-	var _g = 0;
-	var _g1 = this._vertices;
-	while(_g < _g1.length) {
-		var vertex = _g1[_g];
-		++_g;
-		haxe_Log.trace(Std.string(vertex) + "->" + hxlpers_geom_V2d.fromPoints(vertex,center).getAngle(),{ fileName : "PolygonShape.hx", lineNumber : 29, className : "hxlpers.shapes.PolygonShape", methodName : "new"});
-	}
-	hxlpers_shapes_PolygonShape.orderPoints(this._vertices,center);
-	haxe_Log.trace("after " + Std.string(this._vertices),{ fileName : "PolygonShape.hx", lineNumber : 33, className : "hxlpers.shapes.PolygonShape", methodName : "new"});
-	var _g2 = 0;
-	var _g11 = this._vertices;
-	while(_g2 < _g11.length) {
-		var vertex1 = _g11[_g2];
-		++_g2;
-		haxe_Log.trace(Std.string(vertex1) + "->" + hxlpers_geom_V2d.fromPoints(vertex1,center).getAngle(),{ fileName : "PolygonShape.hx", lineNumber : 36, className : "hxlpers.shapes.PolygonShape", methodName : "new"});
-	}
-};
-$hxClasses["hxlpers.shapes.PolygonShape"] = hxlpers_shapes_PolygonShape;
-hxlpers_shapes_PolygonShape.__name__ = ["hxlpers","shapes","PolygonShape"];
-hxlpers_shapes_PolygonShape.orderPoints = function(Points,center) {
-	Points.sort(function(p0,p1) {
-		var a0 = hxlpers_geom_V2d.fromPoints(p0,center).getAngle();
-		var a1 = hxlpers_geom_V2d.fromPoints(p1,center).getAngle();
-		if(a0 > a1) return 1; else if(a1 > a0) return -1;
-		return 0;
-	});
-};
-hxlpers_shapes_PolygonShape.__super__ = openfl_display_Shape;
-hxlpers_shapes_PolygonShape.prototype = $extend(openfl_display_Shape.prototype,{
-	draw: function() {
-		haxe_Log.trace("draw",{ fileName : "PolygonShape.hx", lineNumber : 42, className : "hxlpers.shapes.PolygonShape", methodName : "draw"});
-		this.get_graphics().moveTo(this._vertices[0].x,this._vertices[0].y);
-		var _g1 = 1;
-		var _g = this._vertices.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			haxe_Log.trace(this._vertices[i],{ fileName : "PolygonShape.hx", lineNumber : 47, className : "hxlpers.shapes.PolygonShape", methodName : "draw"});
-			this.get_graphics().lineTo(this._vertices[i].x,this._vertices[i].y);
-		}
-		this.get_graphics().lineTo(this._vertices[0].x,this._vertices[0].y);
-	}
-	,__class__: hxlpers_shapes_PolygonShape
 });
 var hxlpers_shapes_RectShape = function(Width,Height,FillColor,Thickness,StrokeColor,centered) {
 	if(centered == null) centered = false;
@@ -4293,11 +4095,11 @@ hxlpers_shapes_RectShape.prototype = $extend(openfl_display_Shape.prototype,{
 	}
 	,__class__: hxlpers_shapes_RectShape
 });
-var hxlpers_shapes_SegmentShape = function(Point1,Point2) {
+var hxlpers_shapes_SegmentShape = function(point1,point2) {
 	openfl_display_Shape.call(this);
-	this.point1 = Point1;
-	this.point2 = Point2;
-	this.draw();
+	haxe_Log.trace(point1,{ fileName : "SegmentShape.hx", lineNumber : 16, className : "hxlpers.shapes.SegmentShape", methodName : "new", customParams : [point2]});
+	this.point1 = point1;
+	this.point2 = point2;
 };
 $hxClasses["hxlpers.shapes.SegmentShape"] = hxlpers_shapes_SegmentShape;
 hxlpers_shapes_SegmentShape.__name__ = ["hxlpers","shapes","SegmentShape"];
@@ -19584,6 +19386,68 @@ openfl_geom_Rectangle.prototype = {
 	}
 	,__class__: openfl_geom_Rectangle
 };
+var openfl_geom_Point = function(x,y) {
+	if(y == null) y = 0;
+	if(x == null) x = 0;
+	this.x = x;
+	this.y = y;
+};
+$hxClasses["openfl.geom.Point"] = openfl_geom_Point;
+openfl_geom_Point.__name__ = ["openfl","geom","Point"];
+openfl_geom_Point.distance = function(pt1,pt2) {
+	var dx = pt1.x - pt2.x;
+	var dy = pt1.y - pt2.y;
+	return Math.sqrt(dx * dx + dy * dy);
+};
+openfl_geom_Point.interpolate = function(pt1,pt2,f) {
+	return new openfl_geom_Point(pt2.x + f * (pt1.x - pt2.x),pt2.y + f * (pt1.y - pt2.y));
+};
+openfl_geom_Point.polar = function(len,angle) {
+	return new openfl_geom_Point(len * Math.cos(angle),len * Math.sin(angle));
+};
+openfl_geom_Point.prototype = {
+	add: function(v) {
+		return new openfl_geom_Point(v.x + this.x,v.y + this.y);
+	}
+	,clone: function() {
+		return new openfl_geom_Point(this.x,this.y);
+	}
+	,copyFrom: function(sourcePoint) {
+		this.x = sourcePoint.x;
+		this.y = sourcePoint.y;
+	}
+	,equals: function(toCompare) {
+		return toCompare != null && toCompare.x == this.x && toCompare.y == this.y;
+	}
+	,normalize: function(thickness) {
+		if(this.x == 0 && this.y == 0) return; else {
+			var norm = thickness / Math.sqrt(this.x * this.x + this.y * this.y);
+			this.x *= norm;
+			this.y *= norm;
+		}
+	}
+	,offset: function(dx,dy) {
+		this.x += dx;
+		this.y += dy;
+	}
+	,setTo: function(xa,ya) {
+		this.x = xa;
+		this.y = ya;
+	}
+	,subtract: function(v) {
+		return new openfl_geom_Point(this.x - v.x,this.y - v.y);
+	}
+	,toString: function() {
+		return "(x=" + this.x + ", y=" + this.y + ")";
+	}
+	,__toLimeVector2: function() {
+		return new lime_math_Vector2(this.x,this.y);
+	}
+	,get_length: function() {
+		return Math.sqrt(this.x * this.x + this.y * this.y);
+	}
+	,__class__: openfl_geom_Point
+};
 var openfl__$internal_renderer_opengl_utils_GraphicsRenderer = function() { };
 $hxClasses["openfl._internal.renderer.opengl.utils.GraphicsRenderer"] = openfl__$internal_renderer_opengl_utils_GraphicsRenderer;
 openfl__$internal_renderer_opengl_utils_GraphicsRenderer.__name__ = ["openfl","_internal","renderer","opengl","utils","GraphicsRenderer"];
@@ -31030,719 +30894,6 @@ openfl_ui_Keyboard.__getKeyLocation = function(key) {
 		return 0;
 	}
 };
-var voronoimap_Map = function(size) {
-	this.mapRandom = new de_polygonal_math_PM_$PRNG();
-	this.SIZE = size;
-	this.reset();
-};
-$hxClasses["voronoimap.Map"] = voronoimap_Map;
-voronoimap_Map.__name__ = ["voronoimap","Map"];
-voronoimap_Map.getBiome = function(p) {
-	if(p.ocean) return "OCEAN"; else if(p.water) {
-		if(p.elevation < 0.1) return "MARSH";
-		if(p.elevation > 0.8) return "ICE";
-		return "LAKE";
-	} else if(p.coast) return "BEACH"; else if(p.elevation > 0.8) {
-		if(p.moisture > 0.50) return "SNOW"; else if(p.moisture > 0.33) return "TUNDRA"; else if(p.moisture > 0.16) return "BARE"; else return "SCORCHED";
-	} else if(p.elevation > 0.6) {
-		if(p.moisture > 0.66) return "TAIGA"; else if(p.moisture > 0.33) return "SHRUBLAND"; else return "TEMPERATE_DESERT";
-	} else if(p.elevation > 0.3) {
-		if(p.moisture > 0.83) return "TEMPERATE_RAIN_FOREST"; else if(p.moisture > 0.50) return "TEMPERATE_DECIDUOUS_FOREST"; else if(p.moisture > 0.16) return "GRASSLAND"; else return "TEMPERATE_DESERT";
-	} else if(p.moisture > 0.66) return "TROPICAL_RAIN_FOREST"; else if(p.moisture > 0.33) return "TROPICAL_SEASONAL_FOREST"; else if(p.moisture > 0.16) return "GRASSLAND"; else return "SUBTROPICAL_DESERT";
-};
-voronoimap_Map.countLands = function(centers) {
-	return Lambda.count(centers,function(c) {
-		return !c.water;
-	});
-};
-voronoimap_Map.tryMutateMapPointsToGetNumberLands = function(map,numberOfLands,timeoutSeconds,initialNumberOfPoints,numLloydIterations,lakeThreshold) {
-	if(lakeThreshold == null) lakeThreshold = 0.3;
-	if(numLloydIterations == null) numLloydIterations = 2;
-	if(initialNumberOfPoints == null) initialNumberOfPoints = 1000;
-	if(timeoutSeconds == null) timeoutSeconds = 10;
-	var pointCount = initialNumberOfPoints;
-	var startTime = haxe_Timer.stamp();
-	var targetLandCountFound = false;
-	do {
-		map.go0PlacePoints(pointCount);
-		map.go1ImprovePoints(numLloydIterations);
-		map.go2BuildGraph();
-		map.go3AssignElevations(lakeThreshold);
-		var lands = voronoimap_Map.countLands(map.centers);
-		if(lands == numberOfLands) targetLandCountFound = true; else if(lands < numberOfLands) pointCount += 1; else pointCount += -1;
-	} while(!targetLandCountFound && haxe_Timer.stamp() - startTime < timeoutSeconds);
-	return map;
-};
-voronoimap_Map.prototype = {
-	newIsland: function(islandShape,variant) {
-		this.islandShape = islandShape;
-		this.mapRandom.seed = variant;
-	}
-	,go0PlacePoints: function(numberOfPoints) {
-		if(numberOfPoints == null) numberOfPoints = 1000;
-		this.reset();
-		this.points = this.generateRandomPoints(numberOfPoints);
-	}
-	,go1ImprovePoints: function(numLloydIterations) {
-		if(numLloydIterations == null) numLloydIterations = 2;
-		this.improveRandomPoints(this.points,numLloydIterations);
-	}
-	,go2BuildGraph: function() {
-		var voronoi = new com_nodename_delaunay_Voronoi(this.points,null,new as3_Rectangle(0,0,this.SIZE.width,this.SIZE.height));
-		this.buildGraph(this.points,voronoi);
-		this.improveCorners();
-		voronoi.dispose();
-		voronoi = null;
-		this.points = null;
-	}
-	,go3AssignElevations: function(lakeThreshold) {
-		if(lakeThreshold == null) lakeThreshold = 0.3;
-		this.assignCornerElevations();
-		this.assignOceanCoastAndLand(lakeThreshold);
-		this.redistributeElevations(this.landCorners(this.corners));
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q = _g1[_g];
-			++_g;
-			if(q.ocean || q.coast) q.elevation = 0.0;
-		}
-		this.assignPolygonElevations();
-	}
-	,go4AssignMoisture: function(riverChance) {
-		this.calculateDownslopes();
-		this.calculateWatersheds();
-		this.createRivers(riverChance);
-		this.assignCornerMoisture();
-		this.redistributeMoisture(this.landCorners(this.corners));
-		this.assignPolygonMoisture();
-	}
-	,go5DecorateMap: function() {
-		this.assignBiomes();
-	}
-	,reset: function() {
-		var p;
-		var q;
-		var edge;
-		if(this.points != null) this.points.splice(0,this.points.length);
-		if(this.edges != null) {
-			var _g = 0;
-			var _g1 = this.edges;
-			while(_g < _g1.length) {
-				var edge1 = _g1[_g];
-				++_g;
-				edge1.d0 = edge1.d1 = null;
-				edge1.v0 = edge1.v1 = null;
-			}
-			this.edges.splice(0,this.edges.length);
-		}
-		if(this.centers != null) {
-			var _g2 = 0;
-			var _g11 = this.centers;
-			while(_g2 < _g11.length) {
-				var p1 = _g11[_g2];
-				++_g2;
-				p1.neighbors.splice(0,p1.neighbors.length);
-				p1.corners.splice(0,p1.corners.length);
-				p1.borders.splice(0,p1.borders.length);
-			}
-			this.centers.splice(0,this.centers.length);
-		}
-		if(this.corners != null) {
-			var _g3 = 0;
-			var _g12 = this.corners;
-			while(_g3 < _g12.length) {
-				var q1 = _g12[_g3];
-				++_g3;
-				q1.adjacent.splice(0,q1.adjacent.length);
-				q1.touches.splice(0,q1.touches.length);
-				q1.protrudes.splice(0,q1.protrudes.length);
-				q1.downslope = null;
-				q1.watershed = null;
-			}
-			this.corners.splice(0,this.corners.length);
-		}
-		if(this.points == null) this.points = [];
-		if(this.edges == null) this.edges = [];
-		if(this.centers == null) this.centers = [];
-		if(this.corners == null) this.corners = [];
-	}
-	,generateRandomPoints: function(NUM_POINTS) {
-		var p;
-		var i;
-		var points = [];
-		var _g = 0;
-		while(_g < NUM_POINTS) {
-			var i1 = _g++;
-			p = { x : this.mapRandom.nextDoubleRange(10,this.SIZE.width - 10), y : this.mapRandom.nextDoubleRange(10,this.SIZE.height - 10)};
-			points.push(p);
-		}
-		return points;
-	}
-	,improveRandomPoints: function(points,numLloydIterations) {
-		var i;
-		var p;
-		var q;
-		var voronoi;
-		var region;
-		var _g = 0;
-		while(_g < numLloydIterations) {
-			var i1 = _g++;
-			voronoi = new com_nodename_delaunay_Voronoi(points,null,new as3_Rectangle(0,0,this.SIZE.width,this.SIZE.height));
-			var _g1 = 0;
-			while(_g1 < points.length) {
-				var p1 = points[_g1];
-				++_g1;
-				region = voronoi.region(p1);
-				p1.x = 0.0;
-				p1.y = 0.0;
-				var _g2 = 0;
-				while(_g2 < region.length) {
-					var q1 = region[_g2];
-					++_g2;
-					p1.x += q1.x;
-					p1.y += q1.y;
-				}
-				p1.x /= region.length;
-				p1.y /= region.length;
-				region.splice(0,region.length);
-			}
-			voronoi.dispose();
-		}
-	}
-	,improveCorners: function() {
-		var newCorners = [];
-		var q;
-		var r;
-		var point;
-		var i;
-		var edge;
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q1 = _g1[_g];
-			++_g;
-			if(q1.border) newCorners[q1.index] = q1.point; else {
-				point = { x : 0.0, y : 0.0};
-				var _g2 = 0;
-				var _g3 = q1.touches;
-				while(_g2 < _g3.length) {
-					var r1 = _g3[_g2];
-					++_g2;
-					point.x += r1.point.x;
-					point.y += r1.point.y;
-				}
-				point.x /= q1.touches.length;
-				point.y /= q1.touches.length;
-				newCorners[q1.index] = point;
-			}
-		}
-		var _g11 = 0;
-		var _g4 = this.corners.length;
-		while(_g11 < _g4) {
-			var i1 = _g11++;
-			this.corners[i1].point = newCorners[i1];
-		}
-		var _g5 = 0;
-		var _g12 = this.edges;
-		while(_g5 < _g12.length) {
-			var edge1 = _g12[_g5];
-			++_g5;
-			if(edge1.v0 != null && edge1.v1 != null) edge1.midpoint = as3_PointCore.interpolate(edge1.v0.point,edge1.v1.point,0.5);
-		}
-	}
-	,landCorners: function(corners) {
-		var q;
-		var locations = [];
-		var _g = 0;
-		while(_g < corners.length) {
-			var q1 = corners[_g];
-			++_g;
-			if(!q1.ocean && !q1.coast) locations.push(q1);
-		}
-		return locations;
-	}
-	,buildGraph: function(points,voronoi) {
-		var _g = this;
-		var p;
-		var q;
-		var point;
-		var other;
-		var libedges = voronoi.edges();
-		var centerLookup = new haxe_ds_StringMap();
-		var _g4 = 0;
-		while(_g4 < points.length) {
-			var point2 = points[_g4];
-			++_g4;
-			p = new voronoimap_graph_Center();
-			p.index = this.centers.length;
-			p.point = point2;
-			p.neighbors = [];
-			p.borders = [];
-			p.corners = [];
-			this.centers.push(p);
-			var key = as3_PointCore.hash(point2);
-			if(__map_reserved[key] != null) centerLookup.setReserved(key,p); else centerLookup.h[key] = p;
-		}
-		var _g5 = 0;
-		var _g11 = this.centers;
-		while(_g5 < _g11.length) {
-			var p1 = _g11[_g5];
-			++_g5;
-			voronoi.region(p1.point);
-		}
-		var _cornerMap = [];
-		var makeCorner = function(point1) {
-			var q1;
-			if(point1 == null) return null;
-			var bucket;
-			var _g1 = (point1.x | 0) - 1;
-			var _g2 = (point1.x | 0) + 2;
-			while(_g1 < _g2) {
-				var bucket1 = _g1++;
-				if(_cornerMap[bucket1] != null) {
-					var _g21 = 0;
-					var _g3 = _cornerMap[bucket1];
-					while(_g21 < _g3.length) {
-						var q2 = _g3[_g21];
-						++_g21;
-						var dx = point1.x - q2.point.x;
-						var dy = point1.y - q2.point.y;
-						if(dx * dx + dy * dy < 1e-6) return q2;
-					}
-				}
-			}
-			bucket = point1.x | 0;
-			if(_cornerMap[bucket] == null) _cornerMap[bucket] = [];
-			q1 = new voronoimap_graph_Corner();
-			q1.index = _g.corners.length;
-			_g.corners.push(q1);
-			q1.point = point1;
-			q1.border = point1.x == 0 || point1.x == _g.SIZE.width || point1.y == 0 || point1.y == _g.SIZE.height;
-			q1.touches = [];
-			q1.protrudes = [];
-			q1.adjacent = [];
-			_cornerMap[bucket].push(q1);
-			return q1;
-		};
-		var _g6 = 0;
-		while(_g6 < libedges.length) {
-			var libedge = libedges[_g6];
-			++_g6;
-			var dedge = libedge.delaunayLine();
-			var vedge = libedge.voronoiEdge();
-			var edge = new voronoimap_graph_Edge();
-			edge.index = this.edges.length;
-			edge.river = 0;
-			this.edges.push(edge);
-			if(vedge.p0 != null && vedge.p1 != null) edge.midpoint = as3_PointCore.interpolate(vedge.p0,vedge.p1,0.5); else edge.midpoint = null;
-			edge.v0 = makeCorner(vedge.p0);
-			edge.v1 = makeCorner(vedge.p1);
-			var key1 = as3_PointCore.hash(dedge.p0);
-			edge.d0 = __map_reserved[key1] != null?centerLookup.getReserved(key1):centerLookup.h[key1];
-			var key2 = as3_PointCore.hash(dedge.p1);
-			edge.d1 = __map_reserved[key2] != null?centerLookup.getReserved(key2):centerLookup.h[key2];
-			if(edge.d0 != null) edge.d0.borders.push(edge);
-			if(edge.d1 != null) edge.d1.borders.push(edge);
-			if(edge.v0 != null) edge.v0.protrudes.push(edge);
-			if(edge.v1 != null) edge.v1.protrudes.push(edge);
-			var addToCornerList = function(v,x) {
-				if(x != null && HxOverrides.indexOf(v,x,0) < 0) v.push(x);
-			};
-			var addToCenterList = function(v1,x1) {
-				if(x1 != null && HxOverrides.indexOf(v1,x1,0) < 0) v1.push(x1);
-			};
-			if(edge.d0 != null && edge.d1 != null) {
-				addToCenterList(edge.d0.neighbors,edge.d1);
-				addToCenterList(edge.d1.neighbors,edge.d0);
-			}
-			if(edge.v0 != null && edge.v1 != null) {
-				addToCornerList(edge.v0.adjacent,edge.v1);
-				addToCornerList(edge.v1.adjacent,edge.v0);
-			}
-			if(edge.d0 != null) {
-				addToCornerList(edge.d0.corners,edge.v0);
-				addToCornerList(edge.d0.corners,edge.v1);
-			}
-			if(edge.d1 != null) {
-				addToCornerList(edge.d1.corners,edge.v0);
-				addToCornerList(edge.d1.corners,edge.v1);
-			}
-			if(edge.v0 != null) {
-				addToCenterList(edge.v0.touches,edge.d0);
-				addToCenterList(edge.v0.touches,edge.d1);
-			}
-			if(edge.v1 != null) {
-				addToCenterList(edge.v1.touches,edge.d0);
-				addToCenterList(edge.v1.touches,edge.d1);
-			}
-		}
-	}
-	,assignCornerElevations: function() {
-		var q;
-		var s;
-		var queue = [];
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q1 = _g1[_g];
-			++_g;
-			q1.water = !this.inside(q1.point);
-		}
-		var _g2 = 0;
-		var _g11 = this.corners;
-		while(_g2 < _g11.length) {
-			var q2 = _g11[_g2];
-			++_g2;
-			if(q2.border) {
-				q2.elevation = 0.0;
-				queue.push(q2);
-			} else q2.elevation = Infinity;
-		}
-		while(queue.length > 0) {
-			q = queue.shift();
-			var _g3 = 0;
-			var _g12 = q.adjacent;
-			while(_g3 < _g12.length) {
-				var s1 = _g12[_g3];
-				++_g3;
-				var newElevation = 0.01 + q.elevation;
-				if(!q.water && !s1.water) newElevation += 1;
-				if(newElevation < s1.elevation) {
-					s1.elevation = newElevation;
-					queue.push(s1);
-				}
-			}
-		}
-	}
-	,redistributeElevations: function(locations) {
-		var SCALE_FACTOR = 1.1;
-		var i;
-		var y;
-		var x;
-		locations.sort(function(c1,c2) {
-			if(c1.elevation > c2.elevation) return 1;
-			if(c1.elevation < c2.elevation) return -1;
-			if(c1.index > c2.index) return 1;
-			if(c1.index < c2.index) return -1;
-			return 0;
-		});
-		var _g1 = 0;
-		var _g = locations.length;
-		while(_g1 < _g) {
-			var i1 = _g1++;
-			y = i1 / (locations.length - 1);
-			x = Math.sqrt(SCALE_FACTOR) - Math.sqrt(SCALE_FACTOR * (1 - y));
-			if(x > 1.0) x = 1.0;
-			locations[i1].elevation = x;
-		}
-	}
-	,redistributeMoisture: function(locations) {
-		var i;
-		locations.sort(function(c1,c2) {
-			if(c1.moisture > c2.moisture) return 1;
-			if(c1.moisture < c2.moisture) return -1;
-			if(c1.index > c2.index) return 1;
-			if(c1.index < c2.index) return -1;
-			return 0;
-		});
-		var _g1 = 0;
-		var _g = locations.length;
-		while(_g1 < _g) {
-			var i1 = _g1++;
-			locations[i1].moisture = i1 / (locations.length - 1);
-		}
-	}
-	,assignOceanCoastAndLand: function(lakeThreshold) {
-		var queue = [];
-		var p;
-		var q;
-		var r;
-		var numWater;
-		var _g = 0;
-		var _g1 = this.centers;
-		while(_g < _g1.length) {
-			var p1 = _g1[_g];
-			++_g;
-			numWater = 0;
-			var _g2 = 0;
-			var _g3 = p1.corners;
-			while(_g2 < _g3.length) {
-				var q1 = _g3[_g2];
-				++_g2;
-				if(q1.border) {
-					p1.border = true;
-					p1.ocean = true;
-					q1.water = true;
-					queue.push(p1);
-				}
-				if(q1.water) numWater += 1;
-			}
-			p1.water = p1.ocean || numWater >= p1.corners.length * lakeThreshold;
-		}
-		while(queue.length > 0) {
-			p = queue.shift();
-			var _g4 = 0;
-			var _g11 = p.neighbors;
-			while(_g4 < _g11.length) {
-				var r1 = _g11[_g4];
-				++_g4;
-				if(r1.water && !r1.ocean) {
-					r1.ocean = true;
-					queue.push(r1);
-				}
-			}
-		}
-		var _g5 = 0;
-		var _g12 = this.centers;
-		while(_g5 < _g12.length) {
-			var p2 = _g12[_g5];
-			++_g5;
-			var numOcean = 0;
-			var numLand = 0;
-			var _g21 = 0;
-			var _g31 = p2.neighbors;
-			while(_g21 < _g31.length) {
-				var r2 = _g31[_g21];
-				++_g21;
-				if(r2.ocean) numOcean += 1; else numOcean += 0;
-				if(!r2.water) numLand += 1; else numLand += 0;
-			}
-			p2.coast = numOcean > 0 && numLand > 0;
-		}
-		var _g6 = 0;
-		var _g13 = this.corners;
-		while(_g6 < _g13.length) {
-			var q2 = _g13[_g6];
-			++_g6;
-			var numOcean1 = 0;
-			var numLand1 = 0;
-			var _g22 = 0;
-			var _g32 = q2.touches;
-			while(_g22 < _g32.length) {
-				var p3 = _g32[_g22];
-				++_g22;
-				if(p3.ocean) numOcean1 += 1; else numOcean1 += 0;
-				if(!p3.water) numLand1 += 1; else numLand1 += 0;
-			}
-			q2.ocean = numOcean1 == q2.touches.length;
-			q2.coast = numOcean1 > 0 && numLand1 > 0;
-			q2.water = q2.border || numLand1 != q2.touches.length && !q2.coast;
-		}
-	}
-	,assignPolygonElevations: function() {
-		var p;
-		var q;
-		var sumElevation;
-		var _g = 0;
-		var _g1 = this.centers;
-		while(_g < _g1.length) {
-			var p1 = _g1[_g];
-			++_g;
-			sumElevation = 0.0;
-			var _g2 = 0;
-			var _g3 = p1.corners;
-			while(_g2 < _g3.length) {
-				var q1 = _g3[_g2];
-				++_g2;
-				sumElevation += q1.elevation;
-			}
-			p1.elevation = sumElevation / p1.corners.length;
-		}
-	}
-	,calculateDownslopes: function() {
-		var q;
-		var s;
-		var r;
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q1 = _g1[_g];
-			++_g;
-			r = q1;
-			var _g2 = 0;
-			var _g3 = q1.adjacent;
-			while(_g2 < _g3.length) {
-				var s1 = _g3[_g2];
-				++_g2;
-				if(s1.elevation <= r.elevation) r = s1;
-			}
-			q1.downslope = r;
-		}
-	}
-	,calculateWatersheds: function() {
-		var q;
-		var r;
-		var i;
-		var changed;
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q1 = _g1[_g];
-			++_g;
-			q1.watershed = q1;
-			if(!q1.ocean && !q1.coast) q1.watershed = q1.downslope;
-		}
-		var _g2 = 0;
-		while(_g2 < 100) {
-			var i1 = _g2++;
-			changed = false;
-			var _g11 = 0;
-			var _g21 = this.corners;
-			while(_g11 < _g21.length) {
-				var q2 = _g21[_g11];
-				++_g11;
-				if(!q2.ocean && !q2.coast && !q2.watershed.coast) {
-					r = q2.downslope.watershed;
-					if(!r.ocean) q2.watershed = r;
-					changed = true;
-				}
-			}
-			if(!changed) break;
-		}
-		var _g3 = 0;
-		var _g12 = this.corners;
-		while(_g3 < _g12.length) {
-			var q3 = _g12[_g3];
-			++_g3;
-			r = q3.watershed;
-			r.watershed_size = 1 + (r.watershed_size == null?0:r.watershed_size);
-		}
-	}
-	,createRivers: function(riverChance) {
-		riverChance = riverChance == null?(this.SIZE.width + this.SIZE.height) / 4 | 0:riverChance;
-		var i;
-		var q;
-		var edge;
-		var _g = 0;
-		while(_g < riverChance) {
-			var i1 = _g++;
-			q = this.corners[this.mapRandom.nextIntRange(0,this.corners.length - 1)];
-			if(q.ocean || q.elevation < 0.3 || q.elevation > 0.9) continue;
-			while(!q.coast) {
-				if(q == q.downslope) break;
-				edge = this.lookupEdgeFromCorner(q,q.downslope);
-				edge.river = edge.river + 1;
-				q.river = (q.river == null?0:q.river) + 1;
-				q.downslope.river = (q.downslope.river == null?0:q.downslope.river) + 1;
-				q = q.downslope;
-			}
-		}
-	}
-	,assignCornerMoisture: function() {
-		var q;
-		var r;
-		var newMoisture;
-		var queue = [];
-		var _g = 0;
-		var _g1 = this.corners;
-		while(_g < _g1.length) {
-			var q1 = _g1[_g];
-			++_g;
-			if((q1.water || q1.river > 0) && !q1.ocean) {
-				if(q1.river > 0) q1.moisture = Math.min(3.0,0.2 * q1.river); else q1.moisture = 1.0;
-				queue.push(q1);
-			} else q1.moisture = 0.0;
-		}
-		while(queue.length > 0) {
-			q = queue.shift();
-			var _g2 = 0;
-			var _g11 = q.adjacent;
-			while(_g2 < _g11.length) {
-				var r1 = _g11[_g2];
-				++_g2;
-				newMoisture = q.moisture * 0.9;
-				if(newMoisture > r1.moisture) {
-					r1.moisture = newMoisture;
-					queue.push(r1);
-				}
-			}
-		}
-		var _g3 = 0;
-		var _g12 = this.corners;
-		while(_g3 < _g12.length) {
-			var q2 = _g12[_g3];
-			++_g3;
-			if(q2.ocean || q2.coast) q2.moisture = 1.0;
-		}
-	}
-	,assignPolygonMoisture: function() {
-		var p;
-		var q;
-		var sumMoisture;
-		var _g = 0;
-		var _g1 = this.centers;
-		while(_g < _g1.length) {
-			var p1 = _g1[_g];
-			++_g;
-			sumMoisture = 0.0;
-			var _g2 = 0;
-			var _g3 = p1.corners;
-			while(_g2 < _g3.length) {
-				var q1 = _g3[_g2];
-				++_g2;
-				if(q1.moisture > 1.0) q1.moisture = 1.0;
-				sumMoisture += q1.moisture;
-			}
-			p1.moisture = sumMoisture / p1.corners.length;
-		}
-	}
-	,assignBiomes: function() {
-		var p;
-		var _g = 0;
-		var _g1 = this.centers;
-		while(_g < _g1.length) {
-			var p1 = _g1[_g];
-			++_g;
-			p1.biome = voronoimap_Map.getBiome(p1);
-		}
-	}
-	,lookupEdgeFromCenter: function(p,r) {
-		var _g = 0;
-		var _g1 = p.borders;
-		while(_g < _g1.length) {
-			var edge = _g1[_g];
-			++_g;
-			if(edge.d0 == r || edge.d1 == r) return edge;
-		}
-		return null;
-	}
-	,lookupEdgeFromCorner: function(q,s) {
-		var _g = 0;
-		var _g1 = q.protrudes;
-		while(_g < _g1.length) {
-			var edge = _g1[_g];
-			++_g;
-			if(edge.v0 == s || edge.v1 == s) return edge;
-		}
-		return null;
-	}
-	,inside: function(p) {
-		return this.islandShape({ x : 2 * (p.x / this.SIZE.width - 0.5), y : 2 * (p.y / this.SIZE.height - 0.5)});
-	}
-	,__class__: voronoimap_Map
-};
-var voronoimap_graph_Center = function() {
-};
-$hxClasses["voronoimap.graph.Center"] = voronoimap_graph_Center;
-voronoimap_graph_Center.__name__ = ["voronoimap","graph","Center"];
-voronoimap_graph_Center.prototype = {
-	__class__: voronoimap_graph_Center
-};
-var voronoimap_graph_Corner = function() {
-};
-$hxClasses["voronoimap.graph.Corner"] = voronoimap_graph_Corner;
-voronoimap_graph_Corner.__name__ = ["voronoimap","graph","Corner"];
-voronoimap_graph_Corner.prototype = {
-	__class__: voronoimap_graph_Corner
-};
-var voronoimap_graph_Edge = function() {
-};
-$hxClasses["voronoimap.graph.Edge"] = voronoimap_graph_Edge;
-voronoimap_graph_Edge.__name__ = ["voronoimap","graph","Edge"];
-voronoimap_graph_Edge.prototype = {
-	__class__: voronoimap_graph_Edge
-};
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; }
 var $_, $fid = 0;
 function $bind(o,m) { if( m == null ) return null; if( m.__id__ == null ) m.__id__ = $fid++; var f; if( o.hx__closures__ == null ) o.hx__closures__ = {}; else f = o.hx__closures__[m.__id__]; if( f == null ) { f = function(){ return f.method.apply(f.scope, arguments); }; f.scope = o; f.method = m; o.hx__closures__[m.__id__] = f; } return f; }
@@ -32666,8 +31817,5 @@ openfl_ui_Keyboard.LEFTBRACKET = 219;
 openfl_ui_Keyboard.BACKSLASH = 220;
 openfl_ui_Keyboard.RIGHTBRACKET = 221;
 openfl_ui_Keyboard.QUOTE = 222;
-voronoimap_Map.DEFAULT_LAKE_THRESHOLD = 0.3;
-voronoimap_Map.DEFAULT_LLOYD_ITERATIONS = 2;
-voronoimap_Map.DEFAULT_NUMBER_OF_POINTS = 1000;
 ApplicationMain.main();
 })(typeof console != "undefined" ? console : {log:function(){}}, typeof window != "undefined" ? window : exports);

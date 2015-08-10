@@ -1,6 +1,6 @@
 package hxlpers.shapes;
+import as3.TypeDefs.Point;
 import openfl.display.Shape;
-import openfl.geom.Point;
 
 /**
  * ...
@@ -10,14 +10,14 @@ class SegmentShape extends Shape
 {
 	var point1:Point;
 	var point2:Point;
-	public function new(Point1:Point, Point2:Point) 
+	public function new(point1:Point, point2:Point) 
 	{
 		super();
-		//trace(Point1, Point2);
-		point1 = Point1;
-		point2 = Point2;
+		trace(point1, point2);
+		this.point1 = point1;
+		this.point2 = point2;
 		
-		draw();
+		//draw();
 	}
 	
 	public function draw() 

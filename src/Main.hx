@@ -1,16 +1,15 @@
 package;
 
-import hxlpers.Rnd;
-import hxlpers.shapes.PolygonShape;
+//import hxlpers.Rnd;
+//import hxlpers.shapes.PolygonShape;
 import hxlpers.shapes.RectShape;
-import hxlpers.shapes.SegmentShape;
-import openfl.display.Bitmap;
-import openfl.display.Shape;
+//import hxlpers.shapes.SegmentShape;
+//import openfl.display.Bitmap;
+//import openfl.display.Shape;
 import openfl.display.Sprite;
-import openfl.geom.Point;
-import openfl.text.TextField;
-import openfl.text.TextFieldAutoSize;
-import voronoimap.Map;
+//import openfl.geom.Point;
+//import openfl.text.TextField;
+//import openfl.text.TextFieldAutoSize;
 
 /**
  * ...
@@ -28,19 +27,32 @@ class Main extends Sprite
 		//trace(bmp);
 		//var tf = new TextField
 		
-		var map = new Map( { width:640, height:480 } );
+		var logicalMap = new LogicalMap( 42, { width:640, height:480 } );
+		logicalMap.improveRandomPoints(1);
 		
+		/*
 		map.go0PlacePoints(42);
 		map.go1ImprovePoints(1);
-		for (i in 0...map.points.length)
+		*/
+		for (p in logicalMap.points)
 		{
+			//trace(p);
 			//trace(map.points[i]);
 			var dot = new RectShape(1, 1, 0xffff00, 0, 0, true);
-			dot.x = map.points[i].x;
-			dot.y = map.points[i].y;
-			//addChild(dot);
+			dot.x = p.x;
+			dot.y = p.y;
+			addChild(dot);
 		}
 		
+		logicalMap.buildGraph();
+		
+		var graphicMap = new GraphicMap(logicalMap);
+		graphicMap.drawEdges();
+		addChild(graphicMap);
+		
+		
+		
+		/*
 		map.go2BuildGraph();
 		
 		var centers = map.centers;
@@ -69,24 +81,7 @@ class Main extends Sprite
 				var border = center.borders[k];
 				
 				
-				/*
-				var m = border.midpoint;
-				if (m != null)
-				{
-					var mShape = new RectShape(1, 1, 0xffff00);
-					var tf = new TextField();
-					tf.background = true;
-					tf.backgroundColor = color;
-					tf.autoSize = TextFieldAutoSize.LEFT;
-					tf.text = "" + k;
-					tf.x=mShape.x = m.x;
-					tf.y = mShape.y = m.y;
-					trace(tf.width);
-					tf.x -= tf.width / 2;
-					tf.y -= tf.height / 2;
-					addChild(tf);
-				}
-				*/
+				
 				
 				
 				
@@ -101,9 +96,11 @@ class Main extends Sprite
 		
 		//addChild(createDelaunay(map));
 		addChild(createVoronoi(map));
-		
+		*/
 	}
 	
+	
+	/*
 	function createDelaunay(map:Map):Sprite
 	{
 		var delaunay = new Sprite();
@@ -151,5 +148,5 @@ class Main extends Sprite
 		}
 		return voronoi;
 	}
-
+	*/
 }
