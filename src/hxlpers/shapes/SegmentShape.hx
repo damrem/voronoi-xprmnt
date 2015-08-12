@@ -12,12 +12,13 @@ class SegmentShape extends Shape
 	var point2:Point;
 	public function new(point1:Point, point2:Point) 
 	{
+		//trace("new");
 		super();
-		trace(point1, point2);
+		//trace(point1, point2);
 		this.point1 = point1;
 		this.point2 = point2;
 		
-		//draw();
+		draw();
 	}
 	
 	public function draw() 

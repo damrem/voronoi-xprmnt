@@ -86,7 +86,7 @@ class LogicalMap
 	 */
 	public function buildGraph() : Void {
 	   voronoi = new Voronoi(points, null, new Rectangle(0, 0, _size.width, _size.height));
-	   trace(voronoi.edges());
+	   //trace(voronoi.edges());
 	   /*
 		buildGraph(points, voronoi);
 	   improveCorners();

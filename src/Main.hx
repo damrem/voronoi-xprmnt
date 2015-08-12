@@ -27,29 +27,31 @@ class Main extends Sprite
 		//trace(bmp);
 		//var tf = new TextField
 		
-		var logicalMap = new LogicalMap( 42, { width:640, height:480 } );
-		logicalMap.improveRandomPoints(1);
+		var logicalMap = new LogicalMap( 256, { width:640, height:480 } );
+		//logicalMap.improveRandomPoints(10);
 		
 		/*
 		map.go0PlacePoints(42);
 		map.go1ImprovePoints(1);
 		*/
-		for (p in logicalMap.points)
-		{
-			//trace(p);
-			//trace(map.points[i]);
-			var dot = new RectShape(1, 1, 0xffff00, 0, 0, true);
-			dot.x = p.x;
-			dot.y = p.y;
-			addChild(dot);
-		}
+		
 		
 		logicalMap.buildGraph();
 		
 		var graphicMap = new GraphicMap(logicalMap);
-		graphicMap.drawEdges();
+		graphicMap.drawRegions();
+		//graphicMap.drawEdges();
+		//graphicMap.drawHull();
 		addChild(graphicMap);
-		
+		for (p in logicalMap.points)
+		{
+			//trace(p);
+			//trace(map.points[i]);
+			var dot = new RectShape(5, 5, 0xffff00, 0, 0, true);
+			dot.x = p.x-2;
+			dot.y = p.y-2;
+			addChild(dot);
+		}
 		
 		
 		/*

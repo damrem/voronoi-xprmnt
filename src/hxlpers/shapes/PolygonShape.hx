@@ -12,6 +12,7 @@ class PolygonShape extends Shape
 {
 	var _vertices:Array<Point>;
 	
+	
 	public function new(vertices:Array<Point>, ?center:Point) 
 	{
 		super();
